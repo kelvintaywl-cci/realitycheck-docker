@@ -10,5 +10,7 @@ jobs:
     #  4. kubectl -n circleci rollout restart deploy docker-provisioner-externalapi
     docker:
       - image: cimg/base:current
+    # NOTE: i added a custom resource_class and made it also default_class
+    resource_class: custom-small
     steps:
       - run: echo done
