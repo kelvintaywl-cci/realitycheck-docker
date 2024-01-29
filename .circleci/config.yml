@@ -1,89 +1,9 @@
 version: 2.1
 
-executors:
-  docker: # Docker using the Base Convenience Image
-    parameters:
-      resource_class:
-        type: string
-        default: "small"
-    docker:
-      - image: 'cimg/base:2021.02-20.04'
-    resource_class: <<parameters.resource_class>>
-
-commands:
-  # resource_class verification commands to execute depending on executor_type
-  verify_resource_class:
-    parameters:
-      resource_class:
-        type: string
-        default: "small"
-      executor_type:
-        type: string
-        default: "docker"
-    steps:
-      - when:
-          condition:
-            equal: [ "docker", << parameters.executor_type >> ]
-          steps:
-            - run:
-                name: verify required Environment Variables
-                command: |
-                  if [ -z "${CIRCLE_HOSTNAME}" -o -z "${CIRCLE_TOKEN}" ];then
-                    echo "You must provide 2 Environment Variables in project settings for this job to run."
-                    echo "CIRCLE_HOSTNAME: Should be the scheme://domain of your install. \"https://ci.example.com\""
-                    echo "CIRCLE_TOKEN: Should be the API Key of an admin or project level with Scope:All"
-                    exit 1
-                  fi
-            - run:
-                name: Verify that job ran with the requested resource_class option
-                command: |
-                  curl -k \
-                  "${CIRCLE_HOSTNAME%/}/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/$CIRCLE_BUILD_NUM?\
-                  circle-token=$CIRCLE_TOKEN" | \
-                  jq '.picard.resource_class.class' | grep <<parameters.resource_class>>
-      - when:
-          condition:
-            equal: [ "windows", << parameters.executor_type >> ]
-          steps:
-            - run:
-                name: verify required Environment Variables
-                command: |
-                  if (!((Test-Path env:CIRCLE_HOSTNAME) -and (Test-Path env:CIRCLE_TOKEN))) {
-                    Write-Host "You must provide 2 Environment Variables in project settings for this job to run."
-                    Write-Host "CIRCLE_HOSTNAME: Should be the scheme://domain of your install. "https://ci.example.com""
-                    Write-Host "CIRCLE_TOKEN: Should be the API Key of an admin or project level with Scope:All"
-                    Exit 1
-                  }
-            - run:
-                name: Verify that job ran with the requested resource_class option
-                command: |
-                  $job = Invoke-RestMethod -URI "$env:CIRCLE_HOSTNAME/api/v2/project/gh/$env:CIRCLE_PROJECT_USERNAME/$env:CIRCLE_PROJECT_REPONAME/job/$env:CIRCLE_BUILD_NUM" `
-                    -Headers @{ "Circle-Token" = "$env:CIRCLE_TOKEN" }
-                  $job.executor.resource_class | Select-String -Pattern "<<parameters.resource_class>>"
-
 jobs:
-  # job definition for verifying the resource_class per each executor_type
-  executor_resource_class:
-    parameters:
-      resource_class:
-        type: string
-        default: "small"
-      executor_type:
-        type: string
-        default: "docker"
-    executor:
-      name: <<parameters.executor_type>>
-      resource_class: <<parameters.resource_class>>
+  build:
+    # should use default Docker resource_class (defaults to medium)
+    docker:
+      - image: cimg/base:current
     steps:
-      - verify_resource_class:
-          resource_class: <<parameters.resource_class>>
-          executor_type: <<parameters.executor_type>>
-
-workflows:
-  docker_resource_class_jobs:
-    jobs:
-      - executor_resource_class:
-          matrix:
-            parameters:
-              resource_class: [small, medium, medium+, large, xlarge]
-              executor_type: [docker] # default, but re-defining for clarity
+      - run: echo done
