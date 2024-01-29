@@ -11,6 +11,6 @@ jobs:
     docker:
       - image: cimg/base:current
     # NOTE: i added a custom resource_class and made it also default_class
-    resource_class: custom-small
+    # resource_class: custom-small
     steps:
       - run: echo done
