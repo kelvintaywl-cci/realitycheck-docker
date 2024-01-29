@@ -3,6 +3,11 @@ version: 2.1
 jobs:
   build:
     # should use default Docker resource_class (defaults to medium)
+    # triggered after:
+    #  1. kubectl -n circleci edit cm/docker-provisioner-configmap
+    #  2. kubectl -n circleci rollout restart deploy docker-provisioner-provisioner
+    #  3. kubectl -n circleci rollout restart deploy docker-provisioner-internalapi
+    #  4. kubectl -n circleci rollout restart deploy docker-provisioner-externalapi
     docker:
       - image: cimg/base:current
     steps:
