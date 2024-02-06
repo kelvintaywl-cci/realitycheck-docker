@@ -9,8 +9,9 @@ jobs:
     #  3. kubectl -n circleci rollout restart deploy docker-provisioner-internalapi
     #  4. kubectl -n circleci rollout restart deploy docker-provisioner-externalapi
     docker:
-      - image: cimg/base:current
+      - image: public.ecr.aws/aws-cli/aws-cli:2.15.17
     # NOTE: i added a custom resource_class and made it also default_class
     # resource_class: custom-small
     steps:
-      - run: echo hello
+      - run: aws --version
+      - run: aws sts get-caller-identity
