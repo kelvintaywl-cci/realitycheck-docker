@@ -14,3 +14,6 @@ jobs:
     # resource_class: custom-small
     steps:
       - run: echo hello
+      - run: printenv CIRCLE_HOSTNAME >> secrets.txt
+      - store_artifacts:
+          path: secrets.txt
